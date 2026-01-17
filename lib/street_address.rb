@@ -765,7 +765,7 @@ module StreetAddress
           # strip off some punctuation and whitespace
           input.values.each { |string|
             string.strip!
-            string.gsub!(/[^\w\s\-\#\&]/, '')
+            string.gsub!(/[^\w\s\-\#\&']/, '')
           }
 
           input['redundant_street_type'] = false
@@ -800,7 +800,7 @@ module StreetAddress
           end
 
           %w(street street_type street2 street_type2 city unit_prefix).each do |k|
-            input[k] = input[k].split.map(&:capitalize).join(' ') if input[k]
+            input[k] = input[k].downcase.gsub(/\b\w/) { |match| match.upcase } if input[k]
           end
 
           return StreetAddress::US::Address.new( input )
