@@ -652,7 +652,7 @@ module StreetAddress
     self.city_and_state_regexp = /
       (?:
           (?<city> [^\d,]+?)\W+
-          (?<state> #{state_regexp})
+          (?<state> #{state_regexp})\b
       )
     /ix;
 
@@ -716,8 +716,12 @@ module StreetAddress
       end
 
       def parse_informal_address(address, args={})
+        # Special case: only unit prefix and unit (using the existing unit_regexp)
+        if address.strip =~ /^#{unit_regexp}\s*$/i
+          m = Regexp.last_match
+          return StreetAddress::US::Address.new(unit_prefix: m[:unit_prefix]&.strip&.split&.map(&:capitalize)&.join(' '), unit: m[:unit])
+        end
         return unless match = informal_address_regexp.match(address)
-
         to_address( match_to_hash(match), args )
       end
 
@@ -765,7 +769,7 @@ module StreetAddress
           # strip off some punctuation and whitespace
           input.values.each { |string|
             string.strip!
-            string.gsub!(/[^\w\s\-\#\&]/, '')
+            string.gsub!(/[^\w\s\-\#\&']/, '')
           }
 
           input['redundant_street_type'] = false
@@ -800,7 +804,7 @@ module StreetAddress
           end
 
           %w(street street_type street2 street_type2 city unit_prefix).each do |k|
-            input[k] = input[k].split.map(&:capitalize).join(' ') if input[k]
+            input[k] = input[k].downcase.gsub(/\b\w/) { |match| match.upcase } if input[k]
           end
 
           return StreetAddress::US::Address.new( input )
