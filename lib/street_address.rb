@@ -652,7 +652,7 @@ module StreetAddress
     self.city_and_state_regexp = /
       (?:
           (?<city> [^\d,]+?)\W+
-          (?<state> #{state_regexp})
+          (?<state> #{state_regexp})\b
       )
     /ix;
 
