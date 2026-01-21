@@ -716,8 +716,12 @@ module StreetAddress
       end
 
       def parse_informal_address(address, args={})
+        # Special case: only unit prefix and unit (using the existing unit_regexp)
+        if address.strip =~ /^#{unit_regexp}\s*$/i
+          m = Regexp.last_match
+          return StreetAddress::US::Address.new(unit_prefix: m[:unit_prefix]&.strip&.split&.map(&:capitalize)&.join(' '), unit: m[:unit])
+        end
         return unless match = informal_address_regexp.match(address)
-
         to_address( match_to_hash(match), args )
       end
 
