@@ -608,7 +608,8 @@ module StreetAddress
     self.unit_prefix_numbered_regexp = /
       (?<unit_prefix>
         su?i?te
-        |p\W*[om]\W*b(?:ox)?
+        |p\W*[om]\W*(?:\.?\W*)?box   
+        |p\W*[om](?!\W*box)            
         |(?:ap|dep)(?:ar)?t(?:me?nt)?
         |ro*m
         |flo*r?
@@ -719,7 +720,8 @@ module StreetAddress
         # Special case: only unit prefix and unit (using the existing unit_regexp)
         if address.strip =~ /^#{unit_regexp}\s*$/i
           m = Regexp.last_match
-          return StreetAddress::US::Address.new(unit_prefix: m[:unit_prefix]&.strip&.split&.map(&:capitalize)&.join(' '), unit: m[:unit])
+          unit_prefix = m[:unit_prefix].strip.gsub(/[^\w\s\-\#\&']/, '').split.map(&:capitalize).join(' ')
+          return StreetAddress::US::Address.new(unit_prefix: unit_prefix, unit: m[:unit])
         end
         return unless match = informal_address_regexp.match(address)
         to_address( match_to_hash(match), args )
