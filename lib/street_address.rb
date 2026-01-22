@@ -590,8 +590,8 @@ module StreetAddress
     self.unit_prefix_numbered_regexp = /
       (?<unit_prefix>
         su?i?te
-        |p\W*[om]\W*(?:\.?\W*)?box   
-        |p\W*[om](?!\W*box)            
+        |p\W*[om]\W*(?:\.?\W*)?box
+        |p\W*[om](?!\W*box)
         |(?:ap|dep)(?:ar)?t(?:me?nt)?
         |ro*m
         |flo*r?
