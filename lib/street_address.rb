@@ -678,7 +678,7 @@ module StreetAddress
     /ix;
 
     self.city_and_state_regexp = /
-            (?:
+      (?:
           (?<city> [^\d,]+?)\W+
           (?<state> #{state_regexp})\b
       )
