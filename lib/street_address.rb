@@ -568,6 +568,7 @@ module StreetAddress
         # special case for addresses like 100 South Street
         (?:(?<street> #{direct_regexp})\W+
            (?<street_type> #{street_type_regexp})\b
+           (?![^,]*\b#{street_type_regexp}\b)
            (?:\s+(?<street_type_suffix>(?:\d{1,4}[A-Za-z]{0,2}|#{dircode_regexp})))?
         )
         |
