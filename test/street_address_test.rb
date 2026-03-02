@@ -19,7 +19,7 @@ class StreetAddressUsTest < Minitest::Test
       :number => '1005',
       :street => 'Gravenstein',
       :postal_code => '95472',
-      :suffix => 'N',
+      :street_type_suffix => 'N',
       :street_type => 'Hwy',
     },
     "1005 Gravenstein Highway North, 95472" => {
@@ -80,7 +80,7 @@ class StreetAddressUsTest < Minitest::Test
       :street => 'Gravenstein',
       :state => 'CA',
       :city => 'Sebastopol',
-      :suffix => 'N',
+      :street_type_suffix => 'N',
       :street_type => 'Hwy',
     },
     "1005 Gravenstein Hwy N, Sebastopol CA" => {
@@ -88,7 +88,7 @@ class StreetAddressUsTest < Minitest::Test
       :street => 'Gravenstein',
       :state => 'CA',
       :city => 'Sebastopol',
-      :suffix => 'N',
+      :street_type_suffix => 'N',
       :street_type => 'Hwy',
     },
     "1005 Gravenstein Hwy, N Sebastopol CA" => {
@@ -137,11 +137,12 @@ class StreetAddressUsTest < Minitest::Test
     },
     "1005 State Highway 116 Sebastopol CA 95472" => {
       :number => '1005',
-      :street => 'State Highway 116',
+      :street => 'State',
       :state => 'CA',
       :city => 'Sebastopol',
       :postal_code => '95472',
       :street_type => 'Hwy',
+      :street_type_suffix => '116',
     },
     "1600 Pennsylvania Ave. Washington DC" => {
       :number => '1600',
@@ -255,8 +256,9 @@ class StreetAddressUsTest < Minitest::Test
       :city => 'Eaton',
       :postal_code => '80615',
       :number => '36401',
-      :street => 'County Road 43',
+      :street => 'County',
       :street_type => 'Rd',
+      :street_type_suffix => '43',
       :state => 'CO'
     },
     "1234 COUNTY HWY 60E, Town, CO 12345" => {
@@ -324,7 +326,7 @@ class StreetAddressUsTest < Minitest::Test
       :unit_prefix => nil,
       :city => "Sebastopol",
       :street2 => nil,
-      :suffix => "N"
+      :street_type_suffix => "N"
     },
     "2730 S Veitch St #207, Arlington, VA 22206" => {
       :number=>"2730",
@@ -531,11 +533,12 @@ class StreetAddressUsTest < Minitest::Test
     address = "36401 County Road 43, Eaton, CO 80615"
     expected_results = {
       :number => '36401',
-      :street => 'County Road 43',
+      :street => 'County',
       :city   => 'Eaton',
       :state  => 'CO',
       :postal_code => '80615',
-      :street_type => nil
+      :street_type => 'Rd',
+      :street_type_suffix => '43'
     }
     parsed_address = StreetAddress::US.parse(address, avoid_redundant_street_type: true)
     compare_expected_to_actual_hash(expected_results, parsed_address.to_h, address)
