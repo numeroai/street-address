@@ -68,7 +68,7 @@ class AddressTest < Minitest::Test
       :line2 => "Sebastopol, CA 95472"
     },
     "1005 State Highway 116 Sebastopol CA 95472" => {
-      :line1 => "1005 State Highway 116",
+      :line1 => "1005 State Hwy 116",
       :line2 => "Sebastopol, CA 95472"
     },
     "1600 Pennsylvania Ave. Washington DC" => {
@@ -112,7 +112,7 @@ class AddressTest < Minitest::Test
       :line2 => "Some City, LA"
     },
     "36401 County Road 43, Eaton, CO 80615" => {
-      :line1 => "36401 County Road 43",
+      :line1 => "36401 County Rd 43",
       :line2 => "Eaton, CO 80615"
     },
     "1234 COUNTY HWY 60E, Town, CO 12345" => {
@@ -134,6 +134,14 @@ class AddressTest < Minitest::Test
     "44 Canal Center Plaza Suite 500, Alexandria, VA 22314" => {
       :line1 => "44 Canal Center Plz Suite 500",
       :line2 => "Alexandria, VA 22314"
+    },
+    "11835 W Olympic Blvd Suite 650 E, Los Angeles, CA 90064" => {
+      :line1 => "11835 W Olympic Blvd Suite 650 E",
+      :line2 => "Los Angeles, CA 90064"
+    },
+    "11835 W Olympic Blvd Suite 650-E, Los Angeles, CA 90064" => {
+      :line1 => "11835 W Olympic Blvd Suite 650 E",
+      :line2 => "Los Angeles, CA 90064"
     }
   }
 
