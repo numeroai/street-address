@@ -494,9 +494,11 @@ module StreetAddress
       'prefix'  => DIRECTIONAL,
       'prefix1' => DIRECTIONAL,
       'prefix2' => DIRECTIONAL,
-      'suffix'  => DIRECTIONAL,
-      'suffix1' => DIRECTIONAL,
-      'suffix2' => DIRECTIONAL,
+      'street_suffix'  => DIRECTIONAL,
+      'street_suffix1' => DIRECTIONAL,
+      'street_suffix2' => DIRECTIONAL,
+      'unit_suffix'    => DIRECTIONAL,
+      'unit2_suffix'   => DIRECTIONAL,
       'street_type'  => STREET_TYPES,
       'street_type1' => STREET_TYPES,
       'street_type2' => STREET_TYPES,
@@ -520,6 +522,7 @@ module StreetAddress
         :address_regexp,
         :informal_address_regexp,
         :dircode_regexp,
+        :unit_prefix_keywords_regexp,
         :unit_prefix_numbered_regexp,
         :unit2_prefix_numbered_regexp,
         :unit_prefix_unnumbered_regexp,
@@ -562,6 +565,30 @@ module StreetAddress
     # http://en.wikipedia.org/wiki/House_number#Block_numbers
     self.number_regexp = /(?<number>\d+-?\d*)(?=\D)/ix
 
+    # Non-capturing alternation of USPS numbered-unit prefix keywords.
+    # Shared by unit_prefix_numbered_regexp / unit2_prefix_numbered_regexp (wrapped
+    # in a named capture) and by street_regexp's alt-2 as a negative lookahead, so
+    # the digit-ending street capture doesn't cross a unit keyword like "Suite 650".
+    self.unit_prefix_keywords_regexp = /
+      su?i?te
+      |p\W*[om]\W*(?:\.?\W*)?box
+      |p\W*[om](?!\W*box)
+      |pmb
+      |(?:ap|dep)(?:ar)?t(?:me?nt)?
+      |ro*m
+      |flo*r?
+      |uni?t
+      |bu?i?ldi?n?g
+      |ha?nga?r
+      |lo?t
+      |pier
+      |slip
+      |spa?ce?
+      |stop
+      |tra?i?le?r
+      |box
+    /ix;
+
     # note that expressions like [^,]+ may scan more than you expect
     self.street_regexp = /
       (?:
@@ -574,18 +601,18 @@ module StreetAddress
         |
         (?:(?<prefix> #{direct_regexp})\W+)?
         (?:
-          (?<street> [^,]*\d)
-          (?:[^\w,]* (?<suffix> #{direct_regexp})\b)
+          (?<street> (?:(?!\b#{unit_prefix_keywords_regexp}\b)[^,])*\d)
+          (?:[^\w,]* (?<street_suffix> #{direct_regexp})\b)
           |
           (?<street> [^,]+)
           (?:[^\w,]+(?<street_type> #{street_type_regexp})\b)
           (?:\s+(?<street_type_suffix>(?:\d{1,4}[A-Za-z]{0,2}|#{dircode_regexp})))?
-          (?:[^\w,]+(?<suffix> #{direct_regexp})\b)?
+          (?:[^\w,]+(?<street_suffix> #{direct_regexp})\b)?
           |
           (?<street> [^,]+?)
           (?:[^\w,]+(?<street_type> #{street_type_regexp})\b)?
           (?:\s+(?<street_type_suffix>(?:\d{1,4}[A-Za-z]{0,2}|#{dircode_regexp})))?
-          (?:[^\w,]+(?<suffix> #{direct_regexp})\b)?
+          (?:[^\w,]+(?<street_suffix> #{direct_regexp})\b)?
         )
       )
     /ix;
@@ -594,45 +621,11 @@ module StreetAddress
     # TODO add support for those that don't require a number
     # TODO map to standard names/abbreviations
     self.unit_prefix_numbered_regexp = /
-      (?<unit_prefix>
-        su?i?te
-        |p\W*[om]\W*(?:\.?\W*)?box
-        |p\W*[om](?!\W*box)
-        |pmb
-        |(?:ap|dep)(?:ar)?t(?:me?nt)?
-        |ro*m
-        |flo*r?
-        |uni?t
-        |bu?i?ldi?n?g
-        |ha?nga?r
-        |lo?t
-        |pier
-        |slip
-        |spa?ce?
-        |stop
-        |tra?i?le?r
-        |box)(?![a-z])
+      (?<unit_prefix>#{unit_prefix_keywords_regexp})(?![a-z])
     /ix;
 
     self.unit2_prefix_numbered_regexp = /
-      (?<unit2_prefix>
-        su?i?te
-        |p\W*[om]\W*(?:\.?\W*)?box
-        |p\W*[om](?!\W*box)
-        |pmb
-        |(?:ap|dep)(?:ar)?t(?:me?nt)?
-        |ro*m
-        |flo*r?
-        |uni?t
-        |bu?i?ldi?n?g
-        |ha?nga?r
-        |lo?t
-        |pier
-        |slip
-        |spa?ce?
-        |stop
-        |tra?i?le?r
-        |box)(?![a-z])
+      (?<unit2_prefix>#{unit_prefix_keywords_regexp})(?![a-z])
     /ix;
 
     self.unit_prefix_unnumbered_regexp = /
@@ -655,13 +648,17 @@ module StreetAddress
           (?: (?:#{unit_prefix_numbered_regexp} \W*)
               | (?<unit_prefix> \#)\W*
           )
-          (?<unit> [\w-]+)
+          (?<unit> [\w-]+?)
+          (?:[\s\-]+(?<unit_suffix>#{direct_regexp}))?
+          (?=\W|\z)
           (?:\s+
             (?:
                 (?: (?:#{unit2_prefix_numbered_regexp} \W*)
                     | (?<unit2_prefix> \#)\W*
                 )
-                (?<unit2> [\w-]+)
+                (?<unit2> [\w-]+?)
+                (?:[\s\-]+(?<unit2_suffix>#{direct_regexp}))?
+                (?=\W|\z)
             )
           )?
       )
@@ -672,7 +669,9 @@ module StreetAddress
                 (?: (?:#{unit2_prefix_numbered_regexp} \W*)
                     | (?<unit2_prefix> \#)\W*
                 )
-                (?<unit2> [\w-]+)
+                (?<unit2> [\w-]+?)
+                (?:[\s\-]+(?<unit2_suffix>#{direct_regexp}))?
+                (?=\W|\z)
             )
           )?
       )
@@ -749,15 +748,31 @@ module StreetAddress
         if address.strip =~ /^#{unit_regexp}\s*$/i
           m = Regexp.last_match
           unit_prefix = m[:unit_prefix].strip.gsub(/[^\w\s\-\#\&']/, '').split.map(&:capitalize).join(' ')
-          result_args = { unit_prefix: unit_prefix, unit: m[:unit] }
-          
+          unit_value = m[:unit]
+          unit_suffix = m[:unit_suffix]
+          if unit_suffix.nil? && unit_value =~ /\A(\d+)-([A-Za-z])\z/
+            unit_value = $1
+            unit_suffix = $2
+          end
+          unit_suffix = DIRECTIONAL[unit_suffix.downcase] || unit_suffix.upcase if unit_suffix
+          result_args = { unit_prefix: unit_prefix, unit: unit_value }
+          result_args[:unit_suffix] = unit_suffix if unit_suffix
+
           # Handle second unit if present
           if m[:unit2_prefix] && m[:unit2]
             unit2_prefix = m[:unit2_prefix].strip.gsub(/[^\w\s\-\#\&']/, '').split.map(&:capitalize).join(' ')
+            unit2_value = m[:unit2]
+            unit2_suffix = m[:unit2_suffix]
+            if unit2_suffix.nil? && unit2_value =~ /\A(\d+)-([A-Za-z])\z/
+              unit2_value = $1
+              unit2_suffix = $2
+            end
+            unit2_suffix = DIRECTIONAL[unit2_suffix.downcase] || unit2_suffix.upcase if unit2_suffix
             result_args[:unit2_prefix] = unit2_prefix
-            result_args[:unit2] = m[:unit2]
+            result_args[:unit2] = unit2_value
+            result_args[:unit2_suffix] = unit2_suffix if unit2_suffix
           end
-          
+
           return StreetAddress::US::Address.new(result_args)
         end
         return unless match = informal_address_regexp.match(address)
@@ -811,6 +826,17 @@ module StreetAddress
             string.gsub!(/[^\w\s\-\#\&']/, '')
           }
 
+          # Split a hyphenated unit token like "650-E" into unit="650" + unit_suffix="E"
+          # so space- and hyphen-separated inputs converge on the same parsed state.
+          ['', '2'].each do |n|
+            u = input["unit#{n}"]
+            next unless u
+            if u =~ /\A(\d+)-([A-Za-z])\z/
+              input["unit#{n}"] = $1
+              input["unit#{n}_suffix"] ||= $2
+            end
+          end
+
           input['redundant_street_type'] = false
           if( input['street'] && !input['street_type'] )
             match = street_regexp.match(input['street'])
@@ -858,9 +884,11 @@ module StreetAddress
         :street_type_suffix,
         :unit,
         :unit_prefix,
+        :unit_suffix,
         :unit2,
         :unit2_prefix,
-        :suffix,
+        :unit2_suffix,
+        :street_suffix,
         :prefix,
         :city,
         :state,
@@ -868,7 +896,7 @@ module StreetAddress
         :postal_code_ext,
         :street2,
         :street_type2,
-        :suffix2,
+        :street_suffix2,
         :prefix2,
         :redundant_street_type
       )
@@ -904,28 +932,30 @@ module StreetAddress
       def line1(s = "")
         parts = []
         if intersection?
-          parts << prefix       if prefix
+          parts << prefix         if prefix
           parts << street
-          parts << street_type  if street_type
+          parts << street_type    if street_type
           parts << street_type_suffix if street_type_suffix
-          parts << suffix       if suffix
+          parts << street_suffix  if street_suffix
           parts << 'and'
-          parts << prefix2      if prefix2
+          parts << prefix2        if prefix2
           parts << street2
-          parts << street_type2 if street_type2
-          parts << suffix2      if suffix2
+          parts << street_type2   if street_type2
+          parts << street_suffix2 if street_suffix2
         else
           parts << number
           parts << prefix if prefix
           parts << street if street
           parts << street_type if street_type && !redundant_street_type
           parts << street_type_suffix if street_type_suffix && !redundant_street_type
-          parts << suffix if suffix
+          parts << street_suffix if street_suffix
           parts << unit_prefix if unit_prefix
           #follow guidelines: http://pe.usps.gov/cpim/ftp/pubs/Pub28/pub28.pdf pg28
           parts << (unit_prefix ? unit : "\# #{unit}") if unit
+          parts << unit_suffix if unit_suffix
           parts << unit2_prefix if unit2_prefix
           parts << (unit2_prefix ? unit2 : "\# #{unit2}") if unit2
+          parts << unit2_suffix if unit2_suffix
         end
         s + parts.join(' ').strip
       end

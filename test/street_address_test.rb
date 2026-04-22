@@ -26,7 +26,7 @@ class StreetAddressUsTest < Minitest::Test
       :number => '1005',
       :street => 'Gravenstein',
       :postal_code => '95472',
-      :suffix => 'N',
+      :street_suffix=> 'N',
       :street_type => 'Hwy',
     },
     "1005 N Gravenstein Highway, Sebastopol, CA" => {
@@ -164,7 +164,7 @@ class StreetAddressUsTest < Minitest::Test
       :street => '400',
       :state => 'UT',
       :city => 'Salt Lake City',
-      :suffix => 'E',
+      :street_suffix=> 'E',
       :prefix => 'S'
     },
     "550 S 400 E #3206, Salt Lake City UT 84111" => {
@@ -174,7 +174,7 @@ class StreetAddressUsTest < Minitest::Test
       :unit => '3206',
       :postal_code => '84111',
       :city => 'Salt Lake City',
-      :suffix => 'E',
+      :street_suffix=> 'E',
       :street_type => nil,
       :unit_prefix => '#',
       :prefix => 'S'
@@ -186,7 +186,7 @@ class StreetAddressUsTest < Minitest::Test
       :unit => 'D304',
       :postal_code => '84098',
       :city => 'Park City',
-      :suffix => 'W',
+      :street_suffix=> 'W',
       :street_type => nil,
       :unit_prefix => 'Apt',
       :prefix => 'N'
@@ -266,7 +266,7 @@ class StreetAddressUsTest < Minitest::Test
       :postal_code => '12345',
       :number => '1234',
       :street => 'County Hwy 60',
-      :suffix => 'E',
+      :street_suffix=> 'E',
       :street_type => 'Hwy',
       :state => 'CO'
     },
@@ -334,12 +334,40 @@ class StreetAddressUsTest < Minitest::Test
       :street_type=>"St",
       :unit=>"207",
       :unit_prefix=>"#",
-      :suffix=>nil,
+      :street_suffix=>nil,
       :prefix=>"S",
       :city=>"Arlington",
       :state=>"VA",
       :postal_code=>"22206",
       :postal_code_ext=>nil
+    },
+    # Unit directional letter: space- and hyphen-separated inputs must converge on
+    # identical parsed fields and identical line1 (see test/address_test.rb).
+    "11835 W Olympic Blvd Suite 650 E, Los Angeles, CA 90064" => {
+      :number => "11835",
+      :prefix => "W",
+      :street => "Olympic",
+      :street_type => "Blvd",
+      :unit_prefix => "Suite",
+      :unit => "650",
+      :unit_suffix => "E",
+      :street_suffix => nil,
+      :city => "Los Angeles",
+      :state => "CA",
+      :postal_code => "90064"
+    },
+    "11835 W Olympic Blvd Suite 650-E, Los Angeles, CA 90064" => {
+      :number => "11835",
+      :prefix => "W",
+      :street => "Olympic",
+      :street_type => "Blvd",
+      :unit_prefix => "Suite",
+      :unit => "650",
+      :unit_suffix => "E",
+      :street_suffix => nil,
+      :city => "Los Angeles",
+      :state => "CA",
+      :postal_code => "90064"
     }
   }
 
@@ -433,7 +461,7 @@ class StreetAddressUsTest < Minitest::Test
       :unit_prefix => "#",
       :city => nil,
       :street2 => nil,
-      :suffix => nil
+      :street_suffix=> nil
     },
     "Apt. 42, 233 S Wacker Dr 60606" => {
       :number => "233",
@@ -446,7 +474,7 @@ class StreetAddressUsTest < Minitest::Test
       :unit_prefix => "Apt",
       :city => nil,
       :street2 => nil,
-      :suffix => nil
+      :street_suffix=> nil
     },
     "2730 S Veitch St #207" => {
       :number=>"2730",
@@ -454,7 +482,7 @@ class StreetAddressUsTest < Minitest::Test
       :street_type=>"St",
       :unit=>"207",
       :unit_prefix=>"#",
-      :suffix=>nil,
+      :street_suffix=>nil,
       :prefix=>"S",
       :city=>nil,
       :state=>nil,
@@ -481,6 +509,21 @@ class StreetAddressUsTest < Minitest::Test
       :street_type => 'Dr',
       :prefix => 'S',
       :unit_prefix => 'Lobby',
+    },
+    "Suite 650 E" => { # space-separated unit directional letter
+      :unit_prefix => 'Suite',
+      :unit => '650',
+      :unit_suffix => 'E'
+    },
+    "Suite 650-E" => { # hyphen-separated unit directional letter
+      :unit_prefix => 'Suite',
+      :unit => '650',
+      :unit_suffix => 'E'
+    },
+    "Apt 12B" => { # no separator, single token stays intact
+      :unit_prefix => 'Apt',
+      :unit => '12B',
+      :unit_suffix => nil
     }
   }
 
