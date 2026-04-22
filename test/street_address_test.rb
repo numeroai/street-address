@@ -524,6 +524,33 @@ class StreetAddressUsTest < Minitest::Test
       :unit_prefix => 'Apt',
       :unit => '12B',
       :unit_suffix => nil
+    },
+    # Lowercase directionals must be uppercased across every directional field.
+    "123 Main St Unit 7 s" => { # lowercase unit_suffix
+      :number => '123',
+      :street => 'Main',
+      :street_type => 'St',
+      :unit_prefix => 'Unit',
+      :unit => '7',
+      :unit_suffix => 'S'
+    },
+    "123 main st n" => { # lowercase street_type_suffix (directional after street_type)
+      :number => '123',
+      :street => 'Main',
+      :street_type => 'St',
+      :street_type_suffix => 'N'
+    },
+    "123 n main st" => { # lowercase prefix
+      :number => '123',
+      :prefix => 'N',
+      :street => 'Main',
+      :street_type => 'St'
+    },
+    "123 Main Street north" => { # lowercase verbose directional -> street_suffix 'N'
+      :number => '123',
+      :street => 'Main',
+      :street_type => 'St',
+      :street_suffix => 'N'
     }
   }
 

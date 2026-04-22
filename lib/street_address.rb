@@ -850,6 +850,20 @@ module StreetAddress
             input[key] = mapping if mapping
           }
 
+          # Directional fields are always uppercase codes (N/S/E/W/NE/...). The
+          # NORMALIZE_MAP lookup handles verbose forms ("North" -> "N") but no-ops
+          # for already-abbreviated inputs, so a lowercase "s" would leak through.
+          # street_type_suffix can also hold a dircode (e.g. "Hwy N"); upcase is
+          # a no-op for its numeric form ("116").
+          %w(
+            prefix prefix1 prefix2
+            street_suffix street_suffix1 street_suffix2
+            unit_suffix unit2_suffix
+            street_type_suffix street_type_suffix1 street_type_suffix2
+          ).each do |k|
+            input[k] = input[k].upcase if input[k]
+          end
+
           if( args[:avoid_redundant_street_type] )
             ['', '1', '2'].each { |suffix|
               street = input['street'      + suffix];
