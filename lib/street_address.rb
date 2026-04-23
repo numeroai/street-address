@@ -831,9 +831,10 @@ module StreetAddress
           ['', '2'].each do |n|
             u = input["unit#{n}"]
             next unless u
+            next if input["unit#{n}_suffix"]
             if u =~ /\A(\d+)-?([A-Za-z]{1,2})\z/
               input["unit#{n}"] = $1
-              input["unit#{n}_suffix"] ||= $2
+              input["unit#{n}_suffix"] = $2
             end
           end
 
