@@ -525,6 +525,22 @@ class StreetAddressUsTest < Minitest::Test
       :unit => '12B',
       :unit_suffix => nil
     },
+    "123 Main St Unit 7s" => { # no separator, trailing directional letter splits off
+      :number => '123',
+      :street => 'Main',
+      :street_type => 'St',
+      :unit_prefix => 'Unit',
+      :unit => '7',
+      :unit_suffix => 'S'
+    },
+    "123 Main St Unit 7sw" => { # no separator, trailing two-letter directional splits off
+      :number => '123',
+      :street => 'Main',
+      :street_type => 'St',
+      :unit_prefix => 'Unit',
+      :unit => '7',
+      :unit_suffix => 'SW'
+    },
     # Lowercase directionals must be uppercased across every directional field.
     "123 Main St Unit 7 s" => { # lowercase unit_suffix
       :number => '123',

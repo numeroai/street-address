@@ -753,6 +753,9 @@ module StreetAddress
           if unit_suffix.nil? && unit_value =~ /\A(\d+)-([A-Za-z])\z/
             unit_value = $1
             unit_suffix = $2
+          elsif unit_suffix.nil? && unit_value =~ /\A(\d+)([A-Za-z]{1,2})\z/ && DIRECTION_CODES[$2.upcase]
+            unit_value = $1
+            unit_suffix = $2
           end
           unit_suffix = DIRECTIONAL[unit_suffix.downcase] || unit_suffix.upcase if unit_suffix
           result_args = { unit_prefix: unit_prefix, unit: unit_value }
@@ -828,10 +831,16 @@ module StreetAddress
 
           # Split a hyphenated unit token like "650-E" into unit="650" + unit_suffix="E"
           # so space- and hyphen-separated inputs converge on the same parsed state.
+          # Also split an unseparated token like "7s" when the trailing letters form
+          # a directional code (N/S/E/W/NE/NW/SE/SW); non-directional trailers like
+          # "12B" stay intact.
           ['', '2'].each do |n|
             u = input["unit#{n}"]
             next unless u
             if u =~ /\A(\d+)-([A-Za-z])\z/
+              input["unit#{n}"] = $1
+              input["unit#{n}_suffix"] ||= $2
+            elsif u =~ /\A(\d+)([A-Za-z]{1,2})\z/ && DIRECTION_CODES[$2.upcase]
               input["unit#{n}"] = $1
               input["unit#{n}_suffix"] ||= $2
             end
