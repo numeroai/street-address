@@ -763,7 +763,7 @@ module StreetAddress
             unit2_prefix = m[:unit2_prefix].strip.gsub(/[^\w\s\-\#\&']/, '').split.map(&:capitalize).join(' ')
             unit2_value = m[:unit2]
             unit2_suffix = m[:unit2_suffix]
-            if unit2_suffix.nil? && unit2_value =~ /\A(\d+)-([A-Za-z])\z/
+            if unit2_suffix.nil? && unit2_value =~ /\A(\d+)-?([A-Za-z]{1,2})\z/
               unit2_value = $1
               unit2_suffix = $2
             end
