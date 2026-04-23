@@ -750,10 +750,7 @@ module StreetAddress
           unit_prefix = m[:unit_prefix].strip.gsub(/[^\w\s\-\#\&']/, '').split.map(&:capitalize).join(' ')
           unit_value = m[:unit]
           unit_suffix = m[:unit_suffix]
-          if unit_suffix.nil? && unit_value =~ /\A(\d+)-([A-Za-z])\z/
-            unit_value = $1
-            unit_suffix = $2
-          elsif unit_suffix.nil? && unit_value =~ /\A(\d+)([A-Za-z]{1,2})\z/ && DIRECTION_CODES[$2.upcase]
+          if unit_suffix.nil? && unit_value =~ /\A(\d+)-?([A-Za-z]{1,2})\z/
             unit_value = $1
             unit_suffix = $2
           end
@@ -829,18 +826,12 @@ module StreetAddress
             string.gsub!(/[^\w\s\-\#\&']/, '')
           }
 
-          # Split a hyphenated unit token like "650-E" into unit="650" + unit_suffix="E"
-          # so space- and hyphen-separated inputs converge on the same parsed state.
-          # Also split an unseparated token like "7s" when the trailing letters form
-          # a directional code (N/S/E/W/NE/NW/SE/SW); non-directional trailers like
-          # "12B" stay intact.
+          # Split a unit token like "650-E", "7s", or "12B" into unit + unit_suffix so
+          # space-, hyphen-, and no-separator inputs converge on the same parsed state.
           ['', '2'].each do |n|
             u = input["unit#{n}"]
             next unless u
-            if u =~ /\A(\d+)-([A-Za-z])\z/
-              input["unit#{n}"] = $1
-              input["unit#{n}_suffix"] ||= $2
-            elsif u =~ /\A(\d+)([A-Za-z]{1,2})\z/ && DIRECTION_CODES[$2.upcase]
+            if u =~ /\A(\d+)-?([A-Za-z]{1,2})\z/
               input["unit#{n}"] = $1
               input["unit#{n}_suffix"] ||= $2
             end
