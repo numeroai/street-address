@@ -670,7 +670,7 @@ module StreetAddress
                     | (?<unit2_prefix> \#)\W*
                 )
                 (?<unit2> [\w-]+?)
-                (?:[\s\-]+(?<unit2_suffix>#{direct_regexp}))?
+                (?:[\s\-]+(?<unit2_suffix>[A-Za-z]{1,2}))?
                 (?=\W|\z)
             )
           )?

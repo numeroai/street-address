@@ -549,6 +549,12 @@ class StreetAddressUsTest < Minitest::Test
       :unit => '650',
       :unit_suffix => 'D'
     },
+    "Lobby PMB 7 D" => { # unnumbered unit prefix + secondary unit with non-directional suffix
+      :unit_prefix => 'Lobby',
+      :unit2_prefix => 'Pmb',
+      :unit2 => '7',
+      :unit2_suffix => 'D'
+    },
     "123 Main St Unit 7s" => { # no separator, trailing directional letter splits off
       :number => '123',
       :street => 'Main',
