@@ -191,6 +191,15 @@ class StreetAddressUsTest < Minitest::Test
       :unit_prefix => 'Apt',
       :prefix => 'N'
     },
+    "328 W 100th St Apt 4 D" => { # space-separated non-directional unit suffix
+      :number => '328',
+      :street => '100th',
+      :street_type => 'St',
+      :prefix => 'W',
+      :unit_prefix => 'Apt',
+      :unit => '4',
+      :unit_suffix => 'D'
+    },
     "100 South St, Philadelphia, PA" => {
       :number => '100',
       :street => 'South',
@@ -524,6 +533,27 @@ class StreetAddressUsTest < Minitest::Test
       :unit_prefix => 'Apt',
       :unit => '12',
       :unit_suffix => 'B'
+    },
+    "Apt 4 D" => { # space-separated, non-directional letter suffix
+      :unit_prefix => 'Apt',
+      :unit => '4',
+      :unit_suffix => 'D'
+    },
+    "Apt 4-D" => { # hyphen-separated, non-directional letter suffix
+      :unit_prefix => 'Apt',
+      :unit => '4',
+      :unit_suffix => 'D'
+    },
+    "Suite 650 D" => { # space-separated, non-directional letter suffix
+      :unit_prefix => 'Suite',
+      :unit => '650',
+      :unit_suffix => 'D'
+    },
+    "Lobby PMB 7 D" => { # unnumbered unit prefix + secondary unit with non-directional suffix
+      :unit_prefix => 'Lobby',
+      :unit2_prefix => 'Pmb',
+      :unit2 => '7',
+      :unit2_suffix => 'D'
     },
     "123 Main St Unit 7s" => { # no separator, trailing directional letter splits off
       :number => '123',

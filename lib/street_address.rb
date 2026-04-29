@@ -649,7 +649,7 @@ module StreetAddress
               | (?<unit_prefix> \#)\W*
           )
           (?<unit> [\w-]+?)
-          (?:[\s\-]+(?<unit_suffix>#{direct_regexp}))?
+          (?:[\s\-]+(?<unit_suffix>[A-Za-z]{1,2}))?
           (?=\W|\z)
           (?:\s+
             (?:
@@ -657,7 +657,7 @@ module StreetAddress
                     | (?<unit2_prefix> \#)\W*
                 )
                 (?<unit2> [\w-]+?)
-                (?:[\s\-]+(?<unit2_suffix>#{direct_regexp}))?
+                (?:[\s\-]+(?<unit2_suffix>[A-Za-z]{1,2}))?
                 (?=\W|\z)
             )
           )?
@@ -670,7 +670,7 @@ module StreetAddress
                     | (?<unit2_prefix> \#)\W*
                 )
                 (?<unit2> [\w-]+?)
-                (?:[\s\-]+(?<unit2_suffix>#{direct_regexp}))?
+                (?:[\s\-]+(?<unit2_suffix>[A-Za-z]{1,2}))?
                 (?=\W|\z)
             )
           )?
