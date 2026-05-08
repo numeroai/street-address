@@ -606,6 +606,33 @@ class StreetAddressUsTest < Minitest::Test
       :street => 'Main',
       :street_type => 'St',
       :street_suffix => 'N'
+    },
+    # Unit codes that collide with USPS street_type abbreviations (Dl=Dale,
+    # Pl=Place) must not be absorbed as the street_type when a unit-prefix word
+    # ("Unit", "Apt", ...) precedes them.
+    "8565 Flying B Way Unit DL, Highlands Ranch, CO 80129" => {
+      :number => '8565',
+      :street => 'Flying B',
+      :street_type => 'Way',
+      :unit_prefix => 'Unit',
+      :unit => 'DL',
+      :city => 'Highlands Ranch',
+      :state => 'CO',
+      :postal_code => '80129'
+    },
+    "8565 Flying B Way Unit dl, Highlands Ranch, CO 80129" => { # lowercase unit
+      :number => '8565',
+      :street => 'Flying B',
+      :street_type => 'Way',
+      :unit_prefix => 'Unit',
+      :unit => 'DL'
+    },
+    "100 Main St Apt PL, Anytown, CA 90000" => { # PL = Place collision
+      :number => '100',
+      :street => 'Main',
+      :street_type => 'St',
+      :unit_prefix => 'Apt',
+      :unit => 'PL'
     }
   }
 

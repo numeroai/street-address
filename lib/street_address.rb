@@ -754,6 +754,7 @@ module StreetAddress
             unit_value = $1
             unit_suffix = $2
           end
+          unit_value = unit_value.upcase if unit_value
           unit_suffix = DIRECTIONAL[unit_suffix.downcase] || unit_suffix.upcase if unit_suffix
           result_args = { unit_prefix: unit_prefix, unit: unit_value }
           result_args[:unit_suffix] = unit_suffix if unit_suffix
@@ -767,6 +768,7 @@ module StreetAddress
               unit2_value = $1
               unit2_suffix = $2
             end
+            unit2_value = unit2_value.upcase if unit2_value
             unit2_suffix = DIRECTIONAL[unit2_suffix.downcase] || unit2_suffix.upcase if unit2_suffix
             result_args[:unit2_prefix] = unit2_prefix
             result_args[:unit2] = unit2_value
@@ -838,6 +840,26 @@ module StreetAddress
             end
           end
 
+          # Recover from unit-prefix words being absorbed into the street name when
+          # the trailing unit code (e.g. "DL", "PL") collides with a USPS street_type
+          # abbreviation ("Dl"=Dale, "Pl"=Place). The street_regexp greedily eats
+          # "...Way Unit" and reads "DL" as the type. Detect that signature and
+          # rewrite into unit_prefix + unit, but only if the trimmed street still
+          # parses as a complete street with its own type — that guard keeps real
+          # streets like "100 Box Pl" untouched.
+          if input['street'] && input['street_type'] &&
+             input['street_type'].length <= 2 && !input['unit_prefix'] && !input['unit']
+            if m = input['street'].match(/\A(.+\S)\s+(#{unit_prefix_keywords_regexp})\z/i)
+              trimmed = m[1]
+              if trimmed.include?(' ') && (re = street_regexp.match(trimmed)) && re['street_type']
+                input['unit_prefix']  = m[2]
+                input['unit']         = input['street_type']
+                input['street']       = re['street']
+                input['street_type']  = re['street_type']
+              end
+            end
+          end
+
           input['redundant_street_type'] = false
           if( input['street'] && !input['street_type'] )
             match = street_regexp.match(input['street'])
@@ -859,7 +881,7 @@ module StreetAddress
           %w(
             prefix prefix1 prefix2
             street_suffix street_suffix1 street_suffix2
-            unit_suffix unit2_suffix
+            unit unit2 unit_suffix unit2_suffix
             street_type_suffix street_type_suffix1 street_type_suffix2
           ).each do |k|
             input[k] = input[k].upcase if input[k]
