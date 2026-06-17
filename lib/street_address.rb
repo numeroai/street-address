@@ -208,7 +208,6 @@ module StreetAddress
       'manor' => 'mnr',
       'manors' => 'mnrs',
       'meadow' => 'mdw',
-      'mdw' => 'mdws',
       'meadows' => 'mdws',
       'medows' => 'mdws',
       'mill' => 'ml',
@@ -602,17 +601,17 @@ module StreetAddress
         (?:(?<prefix> #{direct_regexp})\W+)?
         (?:
           (?<street> (?:(?!\b#{unit_prefix_keywords_regexp}\b)[^,])*\d)
-          (?:[^\w,]* (?<street_suffix> #{direct_regexp})\b)
+          (?:[^\w\x23,]* (?<street_suffix> #{direct_regexp})\b)
           |
           (?<street> [^,]+)
           (?:[^\w,]+(?<street_type> #{street_type_regexp})\b)
           (?:\s+(?<street_type_suffix>(?:\d{1,4}[A-Za-z]{0,2}|#{dircode_regexp})))?
-          (?:[^\w,]+(?<street_suffix> #{direct_regexp})\b)?
+          (?:[^\w\x23,]+(?<street_suffix> #{direct_regexp})\b)?
           |
           (?<street> [^,]+?)
           (?:[^\w,]+(?<street_type> #{street_type_regexp})\b)?
           (?:\s+(?<street_type_suffix>(?:\d{1,4}[A-Za-z]{0,2}|#{dircode_regexp})))?
-          (?:[^\w,]+(?<street_suffix> #{direct_regexp})\b)?
+          (?:[^\w\x23,]+(?<street_suffix> #{direct_regexp})\b)?
         )
       )
     /ix;
