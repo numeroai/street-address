@@ -3,6 +3,28 @@ require 'street_address'
 
 class AddressTest < Minitest::Test
   ADDRESSES = {
+    # Regression: Meadow abbreviation "Mdw" must stay "Mdw", not be pluralized to "Mdws"
+    "7 Misty Mdw, Irvine, CA 92612" => {
+      :line1 => "7 Misty Mdw",
+      :line2 => "Irvine, CA 92612"
+    },
+    "7 Misty Meadow, Irvine, CA 92612" => {
+      :line1 => "7 Misty Mdw",
+      :line2 => "Irvine, CA 92612"
+    },
+    "7 Misty Meadows, Irvine, CA 92612" => {
+      :line1 => "7 Misty Mdws",
+      :line2 => "Irvine, CA 92612"
+    },
+    # Regression: a user-entered "#" unit marker must be preserved (not swallowed as a directional)
+    "517 S Orange Ave # E, Monterey Park, CA 91755" => {
+      :line1 => "517 S Orange Ave # E",
+      :line2 => "Monterey Park, CA 91755"
+    },
+    "517 S Orange Ave #E, Monterey Park, CA 91755" => {
+      :line1 => "517 S Orange Ave # E",
+      :line2 => "Monterey Park, CA 91755"
+    },
     "1005 Gravenstein Hwy 95472" => {
       :line1 => "1005 Gravenstein Hwy",
       :line2 => "95472"

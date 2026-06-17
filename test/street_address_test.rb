@@ -377,6 +377,17 @@ class StreetAddressUsTest < Minitest::Test
       :city => "Los Angeles",
       :state => "CA",
       :postal_code => "90064"
+    },
+    # Regression: a user-entered "#" must parse as a unit, not be swallowed as a street directional
+    "517 S Orange Ave # E, Monterey Park, CA 91755" => {
+      :number => '517',
+      :prefix => 'S',
+      :street => 'Orange',
+      :street_type => 'Ave',
+      :unit_prefix => '#',
+      :unit => 'E',
+      :street_suffix => nil,
+      :street_type_suffix => nil,
     }
   }
 
